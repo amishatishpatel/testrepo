@@ -1,0 +1,14 @@
+===================================
+Configuration Memory information
+===================================
+File Format        BIN
+Interface          BPIX16
+Size               128M
+Start Address      0x00000000
+End Address        0x07FFFFFF
+Checksum           0x8FFE8FD4
+Fill Value         0xFF
+
+Addr1         Addr2         Date                    File(s)                                           Checksum
+0x00000000    0x006FE18B    Mar  3 14:21:47 2017    FRM123701U1R1.runs/impl_Mez3/frm123701u1r1.bit    0x07703A48
+File Checksum Total                                                                                   0x07703A48

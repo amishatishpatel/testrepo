@@ -23,3 +23,7 @@ def second_function(first_parameter):
 	'''
 
 	return first_parameter + 1
+
+def third_function(something):
+
+	return False

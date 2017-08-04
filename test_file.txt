@@ -1,0 +1,8 @@
+verify_sdram_contents=====
+Verifies the data programmed to the SDRAM by reading this back
+and comparing it to the bitstream used to program the SDRAM.
+
+Verification of the bitstream programmed to SDRAM can take
+extremely long and should only be used for debugging.
+:param filename: bitstream used to program SDRAM (binfile)
+:return: True if successful

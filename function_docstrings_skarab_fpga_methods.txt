@@ -1,0 +1,737 @@
+Function Definitions and associated docstrings for: skarab_fpga_methods.py 
+### 1. __init__ ###
+Initialized SKARAB FPGA object
+:param host: IP Address of the targeted SKARAB Board
+:return: none
+
+------
+### 2. is_connected ###
+'ping' the board to see if it is connected and running.
+Tries to read a register
+:return: True or False
+
+------
+### 3. is_running ###
+Is the FPGA programmed and running?
+:return: True or False
+
+------
+### 4. loopbacktest ###
+Run the loopback test.
+:param iface:
+:return:
+
+------
+### 5. _get_device_address ###
+:param device_name: 
+:return: 
+
+------
+### 6. read ###
+Return size_bytes of binary data with carriage-return escape-sequenced.
+:param device_name: name of memory device from which to read
+:param size: how many bytes to read
+:param offset: start at this offset, offset in bytes
+:param use_bulk: use the bulk read function
+:return: binary data string
+
+------
+### 7. _bulk_read_req ###
+:param address: the address at which to read
+:param words_to_read: how many 32-bit words should be read
+:return: binary data string 
+
+------
+### 8. _bulk_read ###
+Return size_bytes of binary data with carriage-return escape-sequenced.
+:param device_name: name of memory device from which to read
+:param size: how many bytes to read
+:param offset: start at this offset, offset in bytes
+:return: binary data string
+
+------
+### 9. _bulk_write_req ###
+Unchecked data write. Maximum of 1988 bytes per transaction
+:param address: memory device to which to write
+:param data: byte string to write
+:param words_to_write: number of 32-bit words to write
+:return: number of 32-bit writes done
+
+------
+### 10. _bulk_write ###
+Data write. Supports > 4 bytes written per transaction.
+:param device_name: memory device to which to write
+:param data: byte string to write
+:param offset: the offset, in bytes, at which to write
+:return: <nothing>
+
+------
+### 11. read_byte_level ###
+Byte_level read. Sorts out reads overlapping registers, and
+reading specific bytes.
+Return size_bytes of binary data with carriage-return escape-sequenced.
+:param device_name: name of memory device from which to read
+:param size: how many bytes to read
+:param offset: start at this offset
+:return: binary data string
+
+------
+### 12. blindwrite ###
+Unchecked data write.
+:param device_name: the memory device to which to write
+:param data: the byte string to write
+:param offset: the offset, in bytes, at which to write
+:param use_bulk: use the bulk write function
+:return: <nothing>
+
+------
+### 13. deprogram ###
+Deprogram the FPGA.
+This actually reboots & boots from the Golden Image
+:return: nothing
+
+------
+### 14. program_from_flash ###
+Program the FPGA from flash memory.
+This is achieved with a reboot of the board.
+The SKARAB boots from flash on start up.
+:return:
+
+------
+### 15. boot_from_sdram ###
+Triggers a reboot of the Virtex7 FPGA and boot from SDRAM.
+:return:
+
+------
+### 16. _upload_to_ram_prepare_image ###
+:param filename: 
+:return: 
+
+------
+### 17. _upload_to_ram_send_image ###
+:param image_to_program: 
+:return: 
+
+------
+### 18. upload_to_ram ###
+Opens a bitfile from which to program FPGA. Reads bitfile
+in chunks of 4096 16-bit words.
+
+Pads last packet to a 4096 word boundary.
+Sends chunks of bitfile to fpga via sdram_program method
+:param filename: file to upload
+:param verify: flag to enable verification of uploaded bitstream (slow)
+:param retries: how many times to attempt to reprogram the board,
+minimum value = 1
+:return:
+
+------
+### 19. _forty_gbe_get_port ###
+:return: 
+
+------
+### 20. _forty_gbe_set_port ###
+:param port: 
+:return: 
+
+------
+### 21. upload_to_ram_and_program ###
+Uploads an FPGA image to the SDRAM, and triggers a reboot to boot
+from the new image.
+*** WARNING: Do NOT attempt to upload a BSP/Flash image to the SDRAM. ***
+:param filename: fpga image to upload (currently supports bin, bit
+:param port
+:param timeout
+:param wait_complete
+and hex files)
+:return: True, if success
+
+------
+### 22. clear_sdram ###
+Clears the last uploaded image from the SDRAM.
+Clears sdram programmed flag.
+:return: Nothing
+
+------
+### 23. verify_sdram_contents ###
+Verifies the data programmed to the SDRAM by reading this back
+and comparing it to the bitstream used to program the SDRAM.
+
+Verification of the bitstream programmed to SDRAM can take
+extremely long and should only be used for debugging.
+:param filename: bitstream used to program SDRAM (binfile)
+:return: True if successful
+
+------
+### 24. data_split_and_pack ###
+Splits 32-bit data into 2 16-bit words:
+    - dataHigh: most significant 2 bytes of data
+    - dataLow: least significant 2 bytes of data
+
+Also packs the data into a binary string for network transmission
+:param data: 32 bit data to be split
+:return: dataHigh, dataLow (packed into binary data string)
+
+------
+### 25. data_unpack_and_merge ###
+Given 2 16-bit words (dataHigh, dataLow), merges the
+data into a 32-bit word
+:param data_high: most significant 2 bytes of data
+:param data_low: least significant 2 bytes of data
+:return: unpacked 32-bit data (as a native Python type)
+
+------
+### 26. unpack_payload ###
+Unpacks the data received from the SKARAB in the response packet.
+
+:param response_payload: payload in received response packed
+:param response_type: type of response (from skarab_definitions)
+:param number_of_words: number of 16-bit words in the response payload
+:param pad_words: number of padding bytes expected in response payload
+:return: response object with populated data fields
+
+------
+### 27. seq_num ###
+(empty)
+
+------
+### 28. seq_num ###
+(empty)
+
+------
+### 29. send_packet ###
+Send payload via UDP packet to SKARAB
+Sends request packets then waits for response packet if expected
+Retransmits request packet (up to 3 times) if response not received
+
+:param skarab_socket: socket object to be used
+:param port:
+:param payload: the data to send to SKARAB
+:param response_type: type of response expected
+:param expect_response: is a response expected?
+:param command_id: command_id of the request packet
+:param number_of_words: total number of 16-bit words expected in response
+:param pad_words: number of padding words (16-bit) expected in response
+:param timeout
+:param retries
+:return: response expected: returns response object or 'None' if no
+response received. else returns 'ok'
+
+------
+### 30. clear_recv_buffer ###
+Clears the recv buffer to discard unhandled responses from the SKARAB
+:param skarab_socket: socket object to be used
+:return: True when buffer empty
+
+------
+### 31. reboot_fpga ###
+Reboots the FPGA, booting from the NOR FLASH.
+:return: Nothing
+
+------
+### 32. reset_fpga ###
+Reset the FPGA firmware. Resets the clks, registers, etc of the design
+:return: 'ok'
+
+------
+### 33. shutdown_skarab ###
+Shuts the SKARAB board down
+:return: 'ok'
+
+------
+### 34. write_board_reg ###
+Write to a board register
+
+:param reg_address: address of register to write to
+:param data: data to write
+:param expect_response: does this write command require a response? 
+(only false for reset and shutdown commands)
+:return: response object - object created from the response payload 
+(attributes = payload components)
+
+------
+### 35. read_board_reg ###
+Read from a specified board register
+:param reg_address: address of register to read
+:param retries:
+:return: data read from register
+
+------
+### 36. write_dsp_reg ###
+Write to a dsp register
+:param reg_address: address of register to write to
+:param data: data to write
+:param expect_response: does this write command require a response?
+:return: response object - object created from the response payload
+
+------
+### 37. read_dsp_reg ###
+Read from a specified dsp register
+:param reg_address: address of register to read
+:return: data read from register
+
+------
+### 38. get_embedded_software_ver ###
+Read the version of the microcontroller embedded software
+:return: embedded software version
+
+------
+### 39. write_wishbone ###
+Used to perform low level wishbone write to a wishbone slave. Gives
+low level direct access to wishbone bus.
+:param wb_address: address of the wishbone slave to write to
+:param data: data to write
+:return: response object
+
+------
+### 40. read_wishbone ###
+Used to perform low level wishbone read from a Wishbone slave.
+:param wb_address: address of the wishbone slave to read from
+:return: Read Data or None
+
+------
+### 41. write_i2c ###
+Perform i2c write on a selected i2c interface.
+Up to 32 bytes can be written in a single i2c transaction
+:param interface: identifier for i2c interface:
+                  0 - SKARAB Motherboard i2c
+                  1 - Mezzanine 0 i2c
+                  2 - Mezzanine 1 i2c
+                  3 - Mezzanine 2 i2c
+                  4 - Mezzanine 3 i2c
+:param slave_address: i2c address of slave to write to
+:param bytes_to_write: 32 bytes of data to write (to be packed as
+16-bit word each), list of bytes
+:return: response object
+
+------
+### 42. read_i2c ###
+Perform i2c read on a selected i2c interface.
+Up to 32 bytes can be read in a single i2c transaction.
+:param interface: identifier for i2c interface:
+                  0 - SKARAB Motherboard i2c
+                  1 - Mezzanine 0 i2c
+                  2 - Mezzanine 1 i2c
+                  3 - Mezzanine 2 i2c
+                  4 - Mezzanine 3 i2c
+:param slave_address: i2c address of slave to read from
+:param num_bytes: number of bytes to read
+:return: an array of the read bytes if successful, else none
+
+------
+### 43. pmbus_read_i2c ###
+Perform a PMBus read of the I2C bus.
+:param bus: I2C bus to perform PMBus Read of
+                  0 - SKARAB Motherboard i2c
+                  1 - Mezzanine 0 i2c
+                  2 - Mezzanine 0 i2c
+                  3 - Mezzanine 0 i2c
+                  4 - Mezzanine 0 i2c
+:param slave_address: address of the slave PMBus device to read
+:param command_code: PMBus command for the I2C read
+:param num_bytes: Number of bytes to read
+:return: array of read bytes if successful, else none
+
+------
+### 44. sdram_program ###
+Used to program a block of 4096 words to the boot SDRAM. 
+These 4096 words are a chunk of the FPGA image to program to 
+SDRAM and boot from.
+
+This data is sent over UDP packets to the fabric UDP port, not the 
+control port- uC does not handle these packets. 
+No response is generated.
+
+:param first_packet: flag to indicate this pkt is the first pkt 
+    of the image
+:param last_packet: flag to indicate this pkt is the last pkt of 
+    the image
+:param write_words: chunk of 4096 words from FPGA Image
+:return: None
+
+------
+### 45. sdram_reconfigure ###
+Used to perform various tasks realting to programming of the boot 
+SDRAM and config of Virtex7 FPGA from boot SDRAM
+:param output_mode: specifies the mode of the flash SDRAM interface
+:param clear_sdram: clear any existing FPGA image from the SDRAM
+:param finished_writing: indicate writing FPGA image to SDRAM 
+    is complete
+:param about_to_boot: enable booting from the newly programmed image 
+    in SDRAM
+:param do_reboot: trigger reboot of the Virtex7 FPGA and boot from 
+    image in SDRAM
+:param reset_sdram_read_addr: reset the SDRAM read address so that 
+    reading SDRAM can start at 0x0
+:param clear_eth_stats: clear ethernet packet statistics with regards 
+    to FPGA image containing packets
+:param enable_debug: enable debug mode for reading data currently 
+    stored in SDRAM
+:param do_sdram_async_read: used in debug mode to read the 32-bits 
+    of the SDRAM and advance read pointer by one
+:param do_continuity_test: test continuity of the flash bus between 
+    the Virtex7 FPGA and the Spartan 3AN FPGA
+:param continuity_test_out_low: Used in continuity debug mode, 
+    specify value to set lower 16 bits of the bus
+:param continuity_test_out_high: Used in continuity debug mode, 
+    specify value to set upper 16 bits of the bus
+:return: data read, if there was any
+
+------
+### 46. read_flash_words ###
+Used to read a block of up to 384 16-bit words from the NOR flash on the SKARAB motherboard.
+:param flash_address: 32-bit Address in the NOR flash to read
+:param num_words: Number of 16-bit words to be read - Default value of 256 words
+:return: Words read by the function call
+
+------
+### 47. verify_words ###
+This method reads back the programmed words from the flash device and checks it
+against the data in the input .bin file uploaded to the Flash Memory.
+:param bitstream: Of the input .bin file that was programmed to Flash Memory
+:param flash_address: 32-bit Address in the NOR flash to START reading from
+:return: Boolean success/fail
+
+------
+### 48. program_flash_words ###
+This is the low-level function, as per the FUM, to write to the Virtex Flash.
+
+:param flash_address: 32-bit flash address to program to
+:param total_num_words: Total number of 16-bit words to program over one or more Ethernet packets
+:param num_words: Number of words in this (specific) Ethernet packet to program
+:param do_buffered_prog: 0/1 = Perform Buffered Programming
+:param start_prog: 0/1 - First packet in flash programming, start programming operation in flash
+:param finish_prog: 0/1 - Last packet in flash programming, complete programming operation in flash
+:param write_words: Words to program, max = 256 Words
+:return: Boolean - Success/Fail - 1/0
+
+------
+### 49. program_words ###
+Higher level function call to Program n-many words from an input .hex (eventually .bin) file.
+This method scrolls through the words in the bitstream, and packs them into 256+256 words.
+:param bitstream: Of the input .bin file to write to Flash Memory
+:param flash_address: Address in Flash Memory from where to start programming
+:return: Boolean Success/Fail - 1/0
+
+------
+### 50. erase_flash_block ###
+Used to erase a block in the NOR flash on the SKARAB motherboard
+:param flash_address: 32-bit address in the NOR flash to erase
+:return: erase_success - 0/1
+
+------
+### 51. erase_blocks ###
+Higher level function call to Erase n-many Flash Blocks in preparation for program_flash_words
+This method erases the required number of blocks in the flash
+- Only the required number of flash blocks are erased
+:param num_flash_blocks: Number of Flash Memory Blocks to be erased, to make space for the new image
+:param flash_address: Start address from where to begin erasing Flash Memory
+:return:
+
+------
+### 52. analyse_file_virtex_flash ###
+This method analyses the input .bin file to determine the number of words to program,
+and the number of blocks to erase
+:param filename: Input .bin to be written to the Virtex FPGA
+:return: Tuple - num_words (in file), num_memory_blocks (required to hold this file)
+
+------
+### 53. virtex_flash_reconfig ###
+This is the entire function that makes the necessary calls to reconfigure the Virtex7's Flash Memory
+:param filename: The actual .bin file that is to be written to the Virtex FPGA
+:param flash_address: 32-bit Address in the NOR flash to start programming from
+:param blind_reconfig: Reconfigure the board and don't wait to Verify what has been written
+:return: Success/Fail - 0/1
+
+------
+### 54. read_spi_page ###
+Used to read a page from the SPI flash in the Spartan 3AN FPGA on the
+SKARAB Motherboard. Up to a full page (264 bytes) can be read.
+
+:param spi_address: address of the page wanting to be read
+:param num_bytes: number of bytes in page to be read (max 264 bytes)
+:return: list of read data
+
+------
+### 55. verify_bytes ###
+This is the high-level function that implements read_spi_page to verify the data from the
+.ufp file that was written to the Spartan FPGA flash memory.
+:param bitstream: of the input .ufp file that was used to reconfigure the Spartan 3AN FPGA
+:return: Boolean - True/False - Success/Fail - 1/0
+
+------
+### 56. program_spi_page ###
+Low-level function call to program a page to the SPI Flash in the Spartan 3AN FPGA on the SKARAB.
+Up to a full page (264 bytes) can be programmed.
+:param spi_address: 32-bit address to program bytes to
+:param num_bytes: Number of bytes to program to Spartan flash
+:param write_bytes: Data to program - max 264 bytes
+:return: Boolean - Success/Fail - 1/0
+
+------
+### 57. program_pages ###
+Higher level function call to Program n-many words from an input .ufp file.
+This method breaks the bitstream up into chunks of up to 264 bytes.
+- Removed 'num_sectors' parameter; doesn't seem to be needed
+:param bitstream: Of the input .ufp file to write to SPI Sectors, without  and 
+
+:param num_pages: Total Number of Pages to be written to the SPI Sectors
+:return: Boolean - Success/Fail - 1/0
+
+------
+### 58. erase_spi_sector ###
+Used to erase a sector in the SPI Flash in the Spartan 3AN FPGA on the SKARAB.
+:param spi_address: 32-bit address to erase in the Flash
+:return: Boolean - Success/Fail - 1/0
+
+------
+### 59. erase_sectors ###
+Erase required number of sectors for input .ufp file
+:param num_sectors: Required number of sectors to be erased
+:return: Boolean - Success/Fail - 1/0
+
+------
+### 60. check_ufp_bitstream ###
+Utility to check bitstream of .ufp file used to program/configure Spartan Flash.
+Also removes all escape characters, i.e. , 
+
+:param filename: of the input .ufp file
+:return: tuple - (True/False, bitstream)
+
+------
+### 61. analyse_ufp_bitstream ###
+This method analyses the input .ufp file to determine the number of pages to program,
+and the number of sectors to erase
+:param bitstream: Input .ufp file to be written to the SPARTAN 3AN FPGA
+:return: Tuple - (num_pages, num_sectors)
+
+------
+### 62. reverse_byte ###
+Method created to replicate 'SwappedByte' method in SpartanFlashReconfigApp.cpp;
+"This is done so that the .ufp bitstream matches raw data format" (?)
+Mirrors 8-bit integer (byte) about its center-point
+e.g. 0b01010110 -> 0b01101010
+:param input_byte: to be byte-swapped/mirrored
+:return: Reversed-byte
+
+------
+### 63. verify_bytes_now ###
+Used to 'Verify on the fly' the data programmed to SPARTAN Flash
+via program_spi_page.
+:param written_bytes:
+:param returned_bytes:
+:return:
+
+------
+### 64. spartan_flash_reconfig ###
+This is the entire function that makes the necessary function calls to reconfigure the Spartan's Flash
+:param filename: The actual .ufp file that is to be written to the Spartan FPGA
+:param blind_reconfig: Reconfigure the board and don't wait to verify what has been written
+:return: Boolean - Success/Fail - 1/0
+
+------
+### 65. check_programming_packet_count ###
+Checks the number of packets programmed into the SDRAM of SKARAB
+:return: {num_ethernet_frames, num_ethernet_bad_frames,
+num_ethernet_overload_frames}
+
+------
+### 66. get_firmware_version ###
+Read the version of the firmware
+:return: golden_image, multiboot, firmware_major_version,
+firmware_minor_version
+
+------
+### 67. get_soc_version ###
+Read the version of the soc
+:return: golden_image, multiboot, soc_major_version, soc_minor_version
+
+------
+### 68. front_panel_status_leds ###
+Control front panel status LEDs
+:param led_0_on: True: Turn LED 0 on, False: off
+:param led_1_on: True: Turn LED 1 on, False: off
+:param led_2_on: True: Turn LED 2 on, False: off
+:param led_3_on: True: Turn LED 3 on, False: off
+:param led_4_on: True: Turn LED 4 on, False: off
+:param led_5_on: True: Turn LED 5 on, False: off
+:param led_6_on: True: Turn LED 6 on, False: off
+:param led_7_on: True: Turn LED 7 on, False: off
+:return: None
+
+------
+### 69. _prepare_sdram_ram_for_programming ###
+Prepares the sdram for programming with FPGA image
+:return:
+
+------
+### 70. _complete_sdram_configuration ###
+Completes sdram programming and configuration. Sets to boot from sdram
+and triggers reboot
+:return: True if success
+
+------
+### 71. read_hmc_i2c ###
+Read a register on the HMC device via the I2C interface
+Prints the data in binary (32-bit) and hexadecimal formats
+Also returns the data
+:param interface: identifier for i2c interface:
+                  0 - SKARAB Motherboard i2c
+                  1 - Mezzanine 0 i2c
+                  2 - Mezzanine 1 i2c
+                  3 - Mezzanine 2 i2c
+                  4 - Mezzanine 3 i2c
+:param slave_address: I2C slave address of device to read
+:param read_address: register address on device to read
+:return: read data / None if fails
+
+------
+### 72. get_sensor_data ###
+Get sensor data.
+Units:
+Fan Speed - RPM
+Fan Speed PWM - PWM %
+Temperature Sensors - degrees Celsius
+Voltage - Volts (V)
+Currents - Amps (A)
+:return: all sensor data rolled up into a dictionary
+
+------
+### 73. set_fan_speed ###
+Sets the speed of a selected fan on the SKARAB motherboard. Desired
+speed is given as a PWM setting: range: 0.0 - 100.0
+:param fan_page: desired fan
+:param pwm_setting: desired PWM speed (as a value from 0.0 to 100.0
+:return: (new_fan_speed_pwm, new_fan_speed_rpm)
+
+------
+### 74. convert_hex_to_bin ###
+Converts a hex file to a bin file with little endianness for
+programming to sdram, also pads to 4096 word boundary
+:param hex_file: file name of hex file to be converted
+:param extract_to_disk: flag whether or not bin file is extracted to
+harddisk
+:return: bitsream
+
+------
+### 75. convert_bit_to_bin ###
+Converts a .bit file to a .bin file for programming SKARAB. .bit files
+typically contain the .bin file with an additional prepended header.
+:param bit_file: bit file to be converted
+:param extract_to_disk: flag whether or not bin file is
+extracted to harddisk
+:return: bitstream
+
+------
+### 76. extract_bitstream ###
+Loads fpg file extracts bin file. Also checks if
+the bin file is compressed and decompresses it.
+:param filename: fpg file to load
+:param extract_to_disk: flag whether or not bin file is extracted
+to harddisk
+:return: bitstream
+
+------
+### 77. check_bitstream ###
+Checks the bitstream to see if it is valid.
+i.e. if it contains a known, correct substring in its header
+If bitstream endianness is incorrect, byte-swap data and return altered bitstream
+:param bitstream: Of the input (.bin) file to be checked
+:return: tuple - (True/False, bitstream)
+
+------
+### 78. reorder_bytes_in_bin_file ###
+Reorders the bytes in a given bin file to make it compatible for
+programming the SKARAB. This function only handles the case where
+the two bytes making up a word need to be swapped.
+:param filename: bin file to reorder
+:param extract_to_disk: flag whether or not bin file is extracted
+to harddisk
+:return: bitstream
+
+------
+### 79. reorder_bytes_in_bitstream ###
+Reorders the bytes in a given binary bitstream to make it compatible for
+programming the SKARAB. This function only handles the case where
+the two bytes making up a word need to be swapped.
+:param bitstream: binary bitstream to reorder
+:return: reordered_bitstream
+
+------
+### 80. post_get_system_information ###
+Cleanup run after get_system_information
+:return: 
+
+------
+### 81. configure_i2c_switch ###
+Configures the PCA9546AD I2C switch.
+:param switch_select: the desired switch configuration:
+       Fan Controller = 1
+       Voltage/Current Monitor = 2
+       1GbE = 4
+
+:return: True or False
+
+------
+### 82. write_fan_controller ###
+Perform a PMBus write to the MAX31785 Fan Controller
+:param command_code: desired command code
+:param num_bytes: number of bytes in command
+:param byte_to_write:  bytes to write
+:return: Nothing
+
+------
+### 83. read_fan_controller ###
+Performs PMBus read from the MAX31785 Fan Controller
+:param command_code: desired command code
+:param num_bytes: number of bytes in command
+:return: Read bytes if successful
+
+------
+### 84. read_fan_speed_rpm ###
+Read the current fan speed of a selected fan in RPM
+:param fan: selected fan
+:param open_switch: True if the i2c switch must be opened
+:return: read fan speed in RPM
+
+------
+### 85. calculate_checksum_using_file ###
+Basically summing up all the words in the input file_name, and returning a 'Checksum'
+:param file_name: The actual filename, and not instance of the open file
+:return: Tally of words in the bitstream of the input file
+
+------
+### 86. calculate_checksum_using_bitstream ###
+Summing up all the words in the input bitstream, and returning a
+'Checksum' - Assuming that the bitstream HAS NOT been padded yet
+:param bitstream: The actual bitstream of the file in question
+:return: checksum
+
+------
+### 87. get_spartan_checksum ###
+Method for easier access to the Spartan Checksum
+:return: spartan_flash_write_checksum
+
+------
+### 88. get_spartan_firmware_version ###
+Using read_spi_page() function to read two SPI Addresses which give
+the major and minor version numbers of the SPARTAN Firmware Version
+:return: String containing 'Major.Minor'
+
+------
+### 89. extract_md5_from_fpg ###
+Given an FPG, extract the md5sum, if it exists
+:param filename: 
+:return: 
+
+------
+### 90. compare_md5_checksums ###
+Easier way to do comparisons against the MD5 Checksums in the .fpg 
+file header. Two MD5 Checksums:
+- md5_header: MD5 Checksum calculated on the .fpg-header
+- md5_bitstream: MD5 Checksum calculated on the actual bitstream, 
+    starting after '?quit'
+:param filename: Of the input .fpg file to be analysed
+:return: Boolean - True/False - 1/0 - Success/Fail
+
+------
